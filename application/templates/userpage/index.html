@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Страничка пользователя {{ user['username']}} {% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <h3>Почта:</h3>
+  <p>{{ user['email'] }}</p>
+  <h3>Обо мне:</h3>
+  {% if user['about'] %}
+  <p>{{ user['about'] }}</p>
+  {% else %}
+  <p>Вы пока ничего не написали</p>
+  {% endif %}
+  <p><a href="{{ url_for('userpage.edit') }}">Редактировать профиль</a></p>
+  <form class="delete_user" action="{{ url_for('userpage.delete') }}" method="post">
+    <input class="delete" type="submit" value="Удалить профиль" onclick="return confirm('Сайт конечно так себе, но может не надо?');">
+  </form>
+{% endblock %}
