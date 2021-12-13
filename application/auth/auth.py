@@ -1,12 +1,13 @@
+import functools
 from flask import Blueprint, flash, g, request, session
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from application.db import get_db
 
-bp = Blueprint('auth', __name__, url_prefix='/api/auth')
+auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
 
-@bp.route('/register', methods=['POST'])
+@auth_bp.route('/register', methods=['POST'])
 def register():
     if request.method == 'POST':
         username = request.form['username']
@@ -41,7 +42,7 @@ def register():
         return f"Error: {error}"
 
 
-@bp.route('/login', methods=['GET', 'POST'])
+@auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         email = request.form['email']
@@ -54,8 +55,8 @@ def login():
             'SELECT * FROM users WHERE email = ?', (email,)
         ).fetchone()
 
-        if user is None:
-            error = 'Incorrect username.'
+        if email is None:
+            error = 'Incorrect email.'
 
         elif not check_password_hash(user['password'], password):
             error = 'Incorrect password.'
@@ -69,7 +70,7 @@ def login():
         return f"Error: {error}"
 
 
-@bp.before_app_request
+@auth_bp.before_app_request
 def load_logged_in_user():
     user_id = session.get('user_id')
 
@@ -82,18 +83,18 @@ def load_logged_in_user():
         ).fetchone()
 
 
-@bp.route('/logout', methods=['GET'])
+@auth_bp.route('/logout', methods=['GET'])
 def logout():
     session.clear()
     return f"User logout"
 
 
-# def login_required(view):
-#     @functools.wraps(view)
-#     def wrapped_view(**kwargs):
-#         if g.user is None:
-#             return redirect(url_for('auth.login'))
-#
-#         return view(**kwargs)
-#
-#     return wrapped_view
+def login_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user is None:
+            return f"No authorized user. Please, authorize first"
+
+        return view(**kwargs)
+
+    return wrapped_view

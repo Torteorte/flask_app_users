@@ -2,7 +2,14 @@ import os
 
 from flask import Flask
 
-from application import db, auth, userpage, users
+from application import db
+from application.auth import auth
+from application.profile import profile
+from application.users import users
+
+
+def page_not_found(error):
+    return f'Error 404! Bad request! Try another one URL or method.', 404
 
 
 def create_app(test_config=None):
@@ -27,13 +34,14 @@ def create_app(test_config=None):
     except OSError:
         pass
 
+    app.register_error_handler(404, page_not_found)
+
     db.init_app(app)
 
-    app.register_blueprint(auth.bp)
+    app.register_blueprint(auth.auth_bp)
 
-    app.register_blueprint(userpage.bp)
+    app.register_blueprint(profile.profile_bp)
 
-    app.register_blueprint(users.bp)
-    # app.add_url_rule('/', endpoint='index')
+    app.register_blueprint(users.users_bp)
 
     return app
