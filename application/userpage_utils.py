@@ -36,7 +36,7 @@ def post_edit_userpage(id_user):
             (username, email, about, id_user)
         )
         db.commit()
-        return redirect(url_for('userpage.index'))
+        return f"User data changed successfully"
 
 
 def delete_user(id_user):
