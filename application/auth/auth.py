@@ -7,6 +7,14 @@ from application.db import get_db
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
 
+@auth_bp.errorhandler(400)
+def bad_request_edit(e):
+    if request.path.startswith('/api/auth/register'):
+        return f'Error 400 BAD REQUEST! Check username, email and password in form-data of request', 400
+    elif request.path.startswith('/api/auth/login'):
+        return f'Error 400 BAD REQUEST! Check email and password in form-data of request', 400
+
+
 @auth_bp.route('/register', methods=['POST'])
 def register():
     if request.method == 'POST':
@@ -36,13 +44,13 @@ def register():
                 return f"User success added"
 
             except db.IntegrityError:
-                error = f"User {username} is already registered."
+                error = f"Email '{email}' is already registered."
 
         flash(error)
         return f"Error: {error}"
 
 
-@auth_bp.route('/login', methods=['GET', 'POST'])
+@auth_bp.route('/login', methods=['POST'])
 def login():
     if request.method == 'POST':
         email = request.form['email']
@@ -70,6 +78,12 @@ def login():
         return f"Error: {error}"
 
 
+@auth_bp.route('/logout', methods=['GET'])
+def logout():
+    session.clear()
+    return f"User logout"
+
+
 @auth_bp.before_app_request
 def load_logged_in_user():
     user_id = session.get('user_id')
@@ -81,12 +95,6 @@ def load_logged_in_user():
         g.user = get_db().execute(
             'SELECT * FROM users WHERE id = ?', (user_id,)
         ).fetchone()
-
-
-@auth_bp.route('/logout', methods=['GET'])
-def logout():
-    session.clear()
-    return f"User logout"
 
 
 def login_required(view):

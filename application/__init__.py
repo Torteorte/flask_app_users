@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask
+from flask import Flask, request
 
 from application import db
 from application.auth import auth
@@ -8,16 +8,20 @@ from application.profile import profile
 from application.users import users
 
 
-def page_not_found(error):
-    return f'Error 404! Bad request! Try another one URL or method.', 404
+def page_not_found(e):
+    return f'Error 404! "URL: {request.base_url}, Method: {request.method}" Not Found! Try another one URL or method.', 404
+
+
+def invalid_method(e):
+    return f'Error 405! "Method: {request.method}" for "URL: {request.base_url}" Not Allowed! Try another method', 405
 
 
 def create_app(test_config=None):
     app = Flask(
         __name__,
-        instance_relative_config=True,
-        template_folder='templates'
+        instance_relative_config=True
     )
+
     app.config.from_mapping(
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'application.sqlite'),
@@ -25,7 +29,6 @@ def create_app(test_config=None):
 
     if test_config is None:
         app.config['JSON_AS_ASCII'] = False
-        app.config.from_pyfile('config.py', silent=True)
     else:
         app.config.from_mapping(test_config)
 
@@ -35,6 +38,7 @@ def create_app(test_config=None):
         pass
 
     app.register_error_handler(404, page_not_found)
+    app.register_error_handler(405, invalid_method)
 
     db.init_app(app)
 
