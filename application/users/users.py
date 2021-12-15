@@ -2,9 +2,20 @@ from flask import (
     Blueprint, jsonify
 )
 
-from application.utils.utils import get_user, get_users
+from .utils import get_user, get_users, get_tokens
 
 users_bp = Blueprint('users', __name__, url_prefix='/api/users')
+
+
+@users_bp.route('/tokens', methods=['GET'])
+def get_all_tokens():
+    data_all = []
+    tokens = get_tokens()
+
+    for token in tokens:
+        data_all.append({**token})
+
+    return jsonify(tokens=data_all)
 
 
 @users_bp.route('/', methods=['GET'])

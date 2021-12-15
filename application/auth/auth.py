@@ -7,14 +7,6 @@ from application.db import get_db
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
 
-@auth_bp.errorhandler(400)
-def bad_request_edit(e):
-    if request.path.startswith('/api/auth/register'):
-        return f'Error 400 BAD REQUEST! Check username, email and password in form-data of request', 400
-    elif request.path.startswith('/api/auth/login'):
-        return f'Error 400 BAD REQUEST! Check email and password in form-data of request', 400
-
-
 @auth_bp.route('/register', methods=['POST'])
 def register():
     if request.method == 'POST':
@@ -64,10 +56,10 @@ def login():
         ).fetchone()
 
         if email is None:
-            error = 'Incorrect email.'
+            error = f'Incorrect email.'
 
         elif not check_password_hash(user['password'], password):
-            error = 'Incorrect password.'
+            error = f'Incorrect password.'
 
         if error is None:
             session.clear()
