@@ -1,6 +1,6 @@
-from flask import request, abort, flash
+from flask import request, flash
 
-from application.db import get_db
+from application.db.db import get_db
 
 
 def post_edit_profile(user_id):
@@ -14,10 +14,6 @@ def post_edit_profile(user_id):
 
     for field in fields.keys():
         if not fields[field]:
-            error = f'{field} is required.'
-
-        elif fields[field] is None:
-            abort(400)
             error = f'{field} is required.'
 
     if error is None:

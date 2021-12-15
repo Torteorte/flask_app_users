@@ -1,100 +1,54 @@
-import functools
-from flask import Blueprint, flash, g, request, session
-from werkzeug.security import check_password_hash, generate_password_hash
+from flask import Blueprint, flash, request
+import secrets
 
-from application.db import get_db
+from application.db.db import get_db
+from application.utils.utils import out_token, get_token
+from .utils import insert_into_users, insert_into_tokens, check_register_properties, get_user_by_email, \
+    check_login_properties
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        email = request.form['email']
+    username = request.form['username']
+    password = request.form['password']
+    email = request.form['email']
+    user_id = str(secrets.token_hex(16))
 
-        db = get_db()
-        error = None
+    db = get_db()
+    error = check_register_properties(username, password, email)
 
-        if not username:
-            error = 'Username is required.'
+    if error is None:
+        try:
+            insert_into_users(user_id, username, password, email)
+            insert_into_tokens(user_id)
+            return f"User success added"
 
-        elif not password:
-            error = 'Password is required.'
+        except db.IntegrityError:
+            error = f"Email '{email}' is already registered."
 
-        elif not email:
-            error = 'Email is required.'
-
-        if error is None:
-            try:
-                db.execute(
-                    "INSERT INTO users (username, password, email) VALUES (?, ?, ?)",
-                    (username, generate_password_hash(password), email),
-                )
-                db.commit()
-                return f"User success added"
-
-            except db.IntegrityError:
-                error = f"Email '{email}' is already registered."
-
-        flash(error)
-        return f"Error: {error}"
+    flash(error)
+    return f"Error: {error}"
 
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
+    email = request.form['email']
+    password = request.form['password']
 
-        db = get_db()
-        error = None
+    user = get_user_by_email(email)
+    error = check_login_properties(user, email, password)
 
-        user = db.execute(
-            'SELECT * FROM users WHERE email = ?', (email,)
-        ).fetchone()
+    if error is None:
+        token = get_token(user['id'])
+        return f"Login success." \
+               f" Token: {token}"
 
-        if email is None:
-            error = f'Incorrect email.'
-
-        elif not check_password_hash(user['password'], password):
-            error = f'Incorrect password.'
-
-        if error is None:
-            session.clear()
-            session['user_id'] = user['id']
-            return f"Login success"
-
-        flash(error)
-        return f"Error: {error}"
+    flash(error)
+    return f"Error: {error}"
 
 
-@auth_bp.route('/logout', methods=['GET'])
-def logout():
-    session.clear()
-    return f"User logout"
-
-
-@auth_bp.before_app_request
-def load_logged_in_user():
-    user_id = session.get('user_id')
-
-    if user_id is None:
-        g.user = None
-
-    else:
-        g.user = get_db().execute(
-            'SELECT * FROM users WHERE id = ?', (user_id,)
-        ).fetchone()
-
-
-def login_required(view):
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        if g.user is None:
-            return f"No authorized user. Please, authorize first"
-
-        return view(**kwargs)
-
-    return wrapped_view
+@auth_bp.route('/logout/<token>', methods=['POST'])
+def logout(token):
+    return out_token(token)

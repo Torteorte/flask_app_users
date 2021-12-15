@@ -1,7 +1,7 @@
 import os
 from flask import Flask
 
-from application import db
+from application.db import db
 from application.auth import auth
 from application.config import SECRET_KEY
 from application.profile import profile

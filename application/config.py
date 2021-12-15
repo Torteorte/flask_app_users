@@ -1,1 +1,6 @@
-SECRET_KEY = '9d83c14a84e03a674ab43b9580054ed3'
+import os
+from dotenv import load_dotenv, find_dotenv
+
+load_dotenv(find_dotenv())
+
+SECRET_KEY = os.environ['SECRET_KEY']

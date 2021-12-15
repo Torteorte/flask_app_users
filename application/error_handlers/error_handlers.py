@@ -16,7 +16,7 @@ def invalid_method(e):
 @auth_bp.errorhandler(400)
 def bad_request_auth(e):
     if request.path.startswith('/api/auth/register'):
-        return f'Error 400 BAD REQUEST! Check username, email and password in form-data of request', 400
+        return f'Error 400! BAD REQUEST! Check username, email and password in form-data of request', 400
     elif request.path.startswith('/api/auth/login'):
         return f'Error 400 BAD REQUEST! Check email and password in form-data of request', 400
 
@@ -24,4 +24,4 @@ def bad_request_auth(e):
 @profile_bp.errorhandler(400)
 def bad_request_edit(e):
     if request.path.startswith('/api/profile/edit'):
-        return f'Error 400 BAD REQUEST! Check username, email and about in form-data of request', 400
+        return f'Error 400! BAD REQUEST! Check username, email and about in form-data of request', 400
