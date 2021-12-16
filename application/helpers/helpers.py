@@ -1,6 +1,6 @@
 from flask_httpauth import HTTPTokenAuth
 
-from application.utils.utils import get_table_tokens, check_token_expiration
+from application.utils.utils import get_token_for_check, check_token_expiration
 
 
 auth = HTTPTokenAuth(scheme='Bearer')
@@ -8,8 +8,7 @@ auth = HTTPTokenAuth(scheme='Bearer')
 
 @auth.verify_token
 def verify_token(token):
-    tokens = get_table_tokens()
+    token_for_check = get_token_for_check(token)
 
-    for token_table in tokens:
-        if {token} == {*token_table}:
-            return check_token_expiration(token)
+    if token_for_check:
+        return check_token_expiration(token_for_check[0])

@@ -1,13 +1,13 @@
 from flask import Blueprint, jsonify
 
-from .utils import get_user, get_users, get_tokens
+from .utils import get_user_by_id, get_users, get_tokens
 from application.helpers.helpers import auth
 
 
 users_bp = Blueprint('users', __name__, url_prefix='/api/users')
 
 
-# Не ругай, это для моего удобства. Такое нельзя оставлять в обычном проекте.
+# роут для удобства
 @users_bp.route('/tokens', methods=['GET'])
 @auth.login_required
 def get_all_tokens():
@@ -32,12 +32,12 @@ def get_all_users():
     return jsonify(users=data_all)
 
 
-@users_bp.route('/<int:userid>', methods=['GET'])
+@users_bp.route('/<user_id>', methods=['GET'])
 @auth.login_required
-def get_user_by_id(userid):
-    user = get_user(userid)
+def get_user_by_id(user_id):
+    user = get_user_by_id(user_id)
 
     if user:
         return jsonify({**user})
     else:
-        return f"User with id '{userid}' is not found"
+        return f"User with id '{user_id}' is not found"

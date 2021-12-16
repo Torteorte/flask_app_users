@@ -19,6 +19,8 @@ def bad_request_auth(e):
         return f'Error 400! BAD REQUEST! Check username, email and password in form-data of request', 400
     elif request.path.startswith('/api/auth/login'):
         return f'Error 400 BAD REQUEST! Check email and password in form-data of request', 400
+    elif request.path.startswith('/api/auth/logout'):
+        return f'Error 400 BAD REQUEST! Check token in form-data of request', 400
 
 
 @profile_bp.errorhandler(400)

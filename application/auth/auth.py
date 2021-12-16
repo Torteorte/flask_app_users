@@ -2,9 +2,9 @@ from flask import Blueprint, flash, request
 import secrets
 
 from application.db.db import get_db
-from application.utils.utils import out_token, get_token
+from application.utils.utils import set_token_expired, get_or_create_token
 from .utils import insert_into_users, insert_into_tokens, check_register_properties, get_user_by_email, \
-    check_login_properties
+    check_login_properties, check_logout_properties
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
@@ -22,8 +22,8 @@ def register():
     if error is None:
         try:
             insert_into_users(user_id, username, password, email)
-            insert_into_tokens(user_id)
-            return f"User success added"
+            token = insert_into_tokens(user_id)
+            return f"User success added. Token: {token}"
 
         except db.IntegrityError:
             error = f"Email '{email}' is already registered."
@@ -41,7 +41,7 @@ def login():
     error = check_login_properties(user, email, password)
 
     if error is None:
-        token = get_token(user['id'])
+        token = get_or_create_token(user['id'])
         return f"Login success." \
                f" Token: {token}"
 
@@ -49,6 +49,14 @@ def login():
     return f"Error: {error}"
 
 
-@auth_bp.route('/logout/<token>', methods=['POST'])
-def logout(token):
-    return out_token(token)
+@auth_bp.route('/logout', methods=['POST'])
+def logout():
+    token = request.form['token']
+    error = check_logout_properties(token)
+
+    if error is None:
+        set_token_expired(token)
+        return f'Success logout'
+
+    flash(error)
+    return f"Error: {error}"

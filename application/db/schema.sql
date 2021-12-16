@@ -3,16 +3,16 @@ DROP TABLE IF EXISTS tokens;
 
 CREATE TABLE users (
   id varchar PRIMARY KEY,
-  username TEXT NOT NULL,
+  username varchar NOT NULL,
   email varchar UNIQUE NOT NULL,
-  password TEXT NOT NULL,
-  about TEXT
+  password varchar NOT NULL,
+  about varchar
 );
 
 CREATE TABLE tokens (
   tokenId INTEGER PRIMARY KEY AUTOINCREMENT,
-  token varchar,
-  tokenExpiration DATETIME,
-  userId varchar,
+  token varchar NOT NULL,
+  tokenExpiration DATETIME NOT NULL,
+  userId varchar NOT NULL,
   FOREIGN KEY (userId) references users(id)
 );

@@ -1,7 +1,7 @@
-# import uuid
-# from uuid import uuid4
-# # import secrets
-# import base64
+import uuid
+from uuid import uuid4
+import secrets
+import base64
 # from flask import request, jsonify
 #
 # rand_token = uuid4()
@@ -29,5 +29,16 @@
 
 # token64 = base64./
 from datetime import datetime, timedelta
+#
+# print(datetime.strptime('2021-12-15 13:13:13.00001', '%Y-%m-%d %H:%M:%S.%f'))
 
-print(datetime.strptime('2021-12-15 13:13:13.00001', '%Y-%m-%d %H:%M:%S.%f'))
+
+def create_token():
+    now_time = datetime.utcnow()
+    token = str(secrets.token_hex(16))
+    token_expiration = now_time + timedelta(seconds=1800)
+    return token, token_expiration
+
+
+tokens = create_token()
+print(tokens)
