@@ -2,7 +2,7 @@ DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS tokens;
 
 CREATE TABLE users (
-  id varchar PRIMARY KEY,
+  id varchar PRIMARY KEY UNIQUE,
   username varchar NOT NULL,
   email varchar UNIQUE NOT NULL,
   password varchar NOT NULL,
@@ -13,6 +13,6 @@ CREATE TABLE tokens (
   tokenId INTEGER PRIMARY KEY AUTOINCREMENT,
   token varchar NOT NULL,
   tokenExpiration DATETIME NOT NULL,
-  userId varchar NOT NULL,
+  userId varchar UNIQUE NOT NULL,
   FOREIGN KEY (userId) references users(id)
 );

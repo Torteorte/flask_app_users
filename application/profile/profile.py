@@ -1,46 +1,58 @@
-from flask import Blueprint, g, jsonify
+from flask import Blueprint, jsonify, request, flash
 
-from .utils import post_edit_profile, delete_user
 from application.db.db import get_db
-# from application.auth.auth import login_required
+from .utils import get_profile_by_token, check_edit_properties, delete_user, update_user
+from application.helpers.helpers import auth
+
 
 profile_bp = Blueprint('profile', __name__, url_prefix='/api/profile')
 
 
 @profile_bp.route('/', methods=['GET'])
-def test_user_from_tokens():
+@auth.login_required
+def get_profile():
+    token = request.headers['Authorization'].split(' ')[1]
+    profile = get_profile_by_token(token)
+
+    return jsonify(
+        id=profile['userId'],
+        username=profile['username'],
+        email=profile['email'],
+        about=profile['about'],
+        token=profile['token']
+    )
+
+
+@profile_bp.route('/edit', methods=['PUT'])
+@auth.login_required
+def edit_profile():
+    username = request.form['username']
+    email = request.form['email']
+    about = request.form['about']
+
     db = get_db()
+    error = check_edit_properties(username, email, about)
 
-    test_user_id = 'cd8197ece12c04a7aa77f5f87cd44eee'
-    test_token = '55cf87724f665f4c907516fe11b9c056'
-    token_table = db.execute(
-        'SELECT * FROM tokens JOIN users WHERE tokens.userId = ?, token = ?', [test_user_id, test_token]
-    ).fetchone()
-    token_table = db.execute(
-        'SELECT * FROM tokens WHERE token = ?', [test_user_id, test_token]
-    ).fetchone()
+    if error is None:
+        token = request.headers['Authorization'].split(' ')[1]
+        profile = get_profile_by_token(token)
 
-    return f"{token_table['id']}"
+        try:
+            update_user(username, email, about, profile)
+            return f"User information changed successfully"
 
+        except db.IntegrityError:
+            error = f'Email "{email}" is already taken.'
 
-# @profile_bp.route('/', methods=['GET'])
-# @login_required
-# def get_profile():
-#     return jsonify(
-#         id=g.user['id'],
-#         username=g.user['username'],
-#         email=g.user['email'],
-#         about=g.user['about']
-#     )
+    flash(error)
+    return f"{error}"
 
 
-# @profile_bp.route('/edit', methods=['POST'])
-# @login_required
-# def edit_profile():
-#     return post_edit_profile(g.user['id'])
+@profile_bp.route('/delete', methods=['DELETE'])
+@auth.login_required
+def delete_profile():
+    token = request.headers['Authorization'].split(' ')[1]
+    profile = get_profile_by_token(token)
 
-
-# @profile_bp.route('/delete', methods=['POST'])
-# @login_required
-# def delete_profile():
-#     return delete_user(g.user)
+    delete_user(profile)
+    return f"User {profile['username']} success deleted."

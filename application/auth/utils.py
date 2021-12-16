@@ -43,7 +43,7 @@ def check_register_properties(username, password, email):
     for field in fields.keys():
 
         if not fields[field]:
-            return f'{field} is required.'
+            return f'{field} can`t be empty.'
 
     return None
 
@@ -62,7 +62,7 @@ def check_login_properties(user, email, password):
 def check_logout_properties(token):
 
     if not token:
-        return f'Token is required.'
+        return f'Token can`t be empty.'
 
     token_for_check = get_token_for_check(token)
 
