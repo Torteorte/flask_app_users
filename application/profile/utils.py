@@ -1,4 +1,7 @@
-from application.db.db import get_db
+from flask import request
+
+from application.db.helpers import get_db
+from application.application_config.errors_raiser import InvalidAPIUsage
 
 
 def get_profile_by_token(token):
@@ -15,12 +18,24 @@ def check_edit_properties(username, email, about):
     for field in fields.keys():
 
         if not fields[field]:
-            return f'{field} can`t be empty.'
+            raise InvalidAPIUsage(f"'{field}' can`t be empty.")
 
-    return None
+
+def get_profile_property():
+    return request.form.get('username'), request.form.get('email'), request.form.get('about')
 
 
 def update_user(username, email, about, profile):
+    db = get_db()
+
+    try:
+        update_user_in_data_base(username, email, about, profile)
+
+    except db.IntegrityError:
+        raise InvalidAPIUsage(f"Email '{email}' is already taken.")
+
+
+def update_user_in_data_base(username, email, about, profile):
     db = get_db()
 
     db.execute(

@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify
 import json
 
 from .utils import get_user_by_id, get_users, get_tokens
-from application.helpers.helpers import auth_token
+from application.application_config.verify_token import auth_token
 
 
 users_bp = Blueprint('users', __name__, url_prefix='/api/users')

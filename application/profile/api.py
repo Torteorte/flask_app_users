@@ -1,11 +1,9 @@
-from flask import Blueprint, jsonify, request, flash
+from flask import Blueprint, jsonify
 import json
 
-from application.db.db import get_db
-from application.utils.utils import request_token
 from application.profile import utils as profile_utils
-from application.helpers.helpers import auth_token
-
+from application.shared.utils import request_token
+from application.application_config.verify_token import auth_token
 
 profile_bp = Blueprint('profile', __name__, url_prefix='/api/profile')
 
@@ -28,27 +26,17 @@ def get_profile():
 @profile_bp.route('/edit', methods=['PUT'])
 @auth_token.login_required
 def edit_profile():
-    username = request.form['username']
-    email = request.form['email']
-    about = request.form['about']
+    username, email, about = profile_utils.get_profile_property()
 
-    db = get_db()
-    error = profile_utils.check_edit_properties(username, email, about)
+    profile_utils.check_edit_properties(username, email, about)
 
-    if error is None:
-        token = request_token()
-        profile = profile_utils.get_profile_by_token(token)
+    token = request_token()
+    profile = profile_utils.get_profile_by_token(token)
 
-        try:
-            profile_utils.update_user(username, email, about, profile)
-            return f"User information changed successfully"
+    profile_utils.update_user(username, email, about, profile)
 
-        except db.IntegrityError:
-            error = f'Email "{email}" is already taken.'
-
-    flash(error)
     return json.dumps({
-        'error': error
+        'text': "User information changed successfully"
     })
 
 
@@ -59,6 +47,7 @@ def delete_profile():
     profile = profile_utils.get_profile_by_token(token)
 
     profile_utils.delete_user(profile)
+
     return json.dumps({
         'text': f"User {profile['username']} success deleted."
     })

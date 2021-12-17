@@ -1,11 +1,9 @@
-import os
 from flask import Flask
 
-from application.db import db
-from application import config as config
-from .error_handlers.error_handlers import app_register_error_handler
-from application.helpers.blueprints import app_register_blueprints
-from application.helpers.make_dirs import app_make_dirs
+from application.application_config import config as config
+from application.application_config.create_db import create_db
+from application.application_config.error_handlers import app_register_error_handler
+from application.application_config.blueprints import app_register_blueprints
 
 
 def create_app():
@@ -17,10 +15,8 @@ def create_app():
         FLASK_ENV=config.FLASK_ENV
     )
 
-    app_make_dirs()
-
-    app_register_error_handler(app)
-    db.init_app(app)
+    create_db(app)
     app_register_blueprints(app)
+    app_register_error_handler(app)
 
     return app

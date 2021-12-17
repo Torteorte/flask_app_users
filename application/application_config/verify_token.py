@@ -1,7 +1,6 @@
 from flask_httpauth import HTTPTokenAuth
 
-from application.utils.utils import get_token_for_check, check_token_expiration
-
+from application.shared.utils import get_token_for_check, check_token_expiration
 
 auth_token = HTTPTokenAuth(scheme='Bearer')
 

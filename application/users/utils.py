@@ -1,4 +1,4 @@
-from application.db.db import get_db
+from application.db.helpers import get_db
 
 
 def get_user_by_id(userid):

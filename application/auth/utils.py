@@ -1,10 +1,25 @@
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask import request
 
-from application.db.db import get_db
-from application.utils.utils import create_token, create_token_expiration, get_token_for_check
+from application.application_config.errors_raiser import InvalidAPIUsage
+from application.db.helpers import get_db
+from application.shared.utils import generate_token, create_token_expiration
 
 
-def insert_into_users(user_id, username, password, email):
+def get_user_property():
+    return request.form.get('email'), request.form.get('password'), request.form.get('username')
+
+
+def create_user(user_id, email, password, username):
+    db = get_db()
+    try:
+        insert_into_users(user_id, email, password, username)
+
+    except db.IntegrityError:
+        raise InvalidAPIUsage(f"Email '{email}' is already registered.")
+
+
+def insert_into_users(user_id, email, password, username):
     db = get_db()
 
     db.execute(
@@ -16,7 +31,7 @@ def insert_into_users(user_id, username, password, email):
 
 def insert_into_tokens(user_id):
     db = get_db()
-    token = create_token()
+    token = generate_token()
     token_expiration = create_token_expiration()
 
     db.execute(
@@ -37,36 +52,19 @@ def get_user_by_email(email):
     ).fetchone()
 
 
-def check_register_properties(username, password, email):
-    fields = {'Username': username, 'Email': email, 'Password': password}
+def check_register_properties(email, password, username):
+    fields = {'Email': email, 'Password': password, 'Username': username}
 
     for field in fields.keys():
 
         if not fields[field]:
-            return f'{field} can`t be empty.'
-
-    return None
+            raise InvalidAPIUsage(f"{field} can`t be empty.", status_code=400)
 
 
 def check_login_properties(user, email, password):
 
     if user is None:
-        return f'No user with email: "{email}".'
+        raise InvalidAPIUsage(f"No user with email: '{email}''.")
 
     elif not check_password_hash(user['password'], password):
-        return f'Incorrect email or password.'
-
-    return None
-
-
-def check_logout_properties(token):
-
-    if not token:
-        return f'Token can`t be empty.'
-
-    token_for_check = get_token_for_check(token)
-
-    if token_for_check is None:
-        return f'Invalid token.'
-
-    return None
+        raise InvalidAPIUsage("Incorrect email or password.")

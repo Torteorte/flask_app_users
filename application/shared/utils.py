@@ -2,11 +2,19 @@ import secrets
 from flask import request
 from datetime import datetime, timedelta
 
-from application.db.db import get_db
+from application.db.helpers import get_db
 
 
-def create_token():
+def generate_random_string():
     return str(secrets.token_hex(16))
+
+
+def generate_user_id():
+    return generate_random_string()
+
+
+def generate_token():
+    return generate_random_string()
 
 
 def create_token_expiration():
@@ -34,7 +42,7 @@ def get_token_info(user_id):
 
 def create_user_token(user_id):
     db = get_db()
-    token = create_token()
+    token = generate_token()
     token_expiration = create_token_expiration()
 
     db.execute(
