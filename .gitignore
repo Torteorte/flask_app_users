@@ -23,10 +23,8 @@ yarn-debug.log*
 yarn-error.log*
 
 .idea
-.env
+application/.env
 venv
-
-# copy from tutorial
 
 venv/
 

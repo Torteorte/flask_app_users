@@ -13,6 +13,6 @@ CREATE TABLE tokens (
   tokenId INTEGER PRIMARY KEY AUTOINCREMENT,
   token varchar NOT NULL,
   tokenExpiration DATETIME NOT NULL,
-  userId varchar UNIQUE NOT NULL,
+  userId varchar NOT NULL,
   FOREIGN KEY (userId) references users(id)
 );

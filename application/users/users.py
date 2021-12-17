@@ -1,43 +1,38 @@
 from flask import Blueprint, jsonify
+import json
 
 from .utils import get_user_by_id, get_users, get_tokens
-from application.helpers.helpers import auth
+from application.helpers.helpers import auth_token
 
 
 users_bp = Blueprint('users', __name__, url_prefix='/api/users')
 
 
-# роут для удобства
+# роут для удобства разработки
 @users_bp.route('/tokens', methods=['GET'])
-@auth.login_required
+@auth_token.login_required
 def get_all_tokens():
-    data_all = []
-    tokens = get_tokens()
+    list_of_tokens = [{**token} for token in get_tokens()]
 
-    for token in tokens:
-        data_all.append({**token})
-
-    return jsonify(tokens=data_all)
+    return jsonify(tokens=list_of_tokens)
 
 
 @users_bp.route('/', methods=['GET'])
-@auth.login_required
+@auth_token.login_required
 def get_all_users():
-    data_all = []
-    users = get_users()
+    list_of_users = [{**user} for user in get_users()]
 
-    for user in users:
-        data_all.append({**user})
-
-    return jsonify(users=data_all)
+    return jsonify(users=list_of_users)
 
 
 @users_bp.route('/<user_id>', methods=['GET'])
-@auth.login_required
+@auth_token.login_required
 def get_user_by_id(user_id):
     user = get_user_by_id(user_id)
 
     if user:
         return jsonify({**user})
     else:
-        return f"User with id '{user_id}' is not found"
+        return json.dumps({
+            'text': f"User with id '{user_id}' is not found"
+        })

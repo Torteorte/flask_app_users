@@ -1,5 +1,7 @@
 import secrets
+from flask import request
 from datetime import datetime, timedelta
+
 from application.db.db import get_db
 
 
@@ -13,7 +15,7 @@ def create_token_expiration():
 
 
 def get_or_create_token(user_id):
-    token = get_token_from_table(user_id)
+    token = get_token_info(user_id)
 
     if token:
         return token['token']
@@ -21,7 +23,7 @@ def get_or_create_token(user_id):
         return create_user_token(user_id)
 
 
-def get_token_from_table(user_id):
+def get_token_info(user_id):
     db = get_db()
     expiration_time = datetime.utcnow() + timedelta(seconds=60)
 
@@ -52,11 +54,12 @@ def set_token_expired(token):
         "UPDATE tokens SET tokenExpiration = ? WHERE token = ?",
         [token_expiration, token],
     )
+
     db.commit()
 
 
 def check_token_expiration(token):
-    token_expiration = get_table_token_expiration(token)
+    token_expiration = get_token_expiration(token)
 
     if date_type(*token_expiration) < datetime.utcnow():
         return None
@@ -71,7 +74,7 @@ def get_token_for_check(token):
     ).fetchone()
 
 
-def get_table_token_expiration(token):
+def get_token_expiration(token):
     db = get_db()
 
     return db.execute(
@@ -82,3 +85,7 @@ def get_table_token_expiration(token):
 
 def date_type(item):
     return datetime.strptime(item, '%Y-%m-%d %H:%M:%S.%f')
+
+
+def request_token():
+    return request.headers['Authorization'].split(' ')[1]

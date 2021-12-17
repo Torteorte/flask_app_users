@@ -1,18 +1,20 @@
 from flask import Blueprint, jsonify, request, flash
+import json
 
 from application.db.db import get_db
-from .utils import get_profile_by_token, check_edit_properties, delete_user, update_user
-from application.helpers.helpers import auth
+from application.utils.utils import request_token
+from application.profile import utils as profile_utils
+from application.helpers.helpers import auth_token
 
 
 profile_bp = Blueprint('profile', __name__, url_prefix='/api/profile')
 
 
 @profile_bp.route('/', methods=['GET'])
-@auth.login_required
+@auth_token.login_required
 def get_profile():
-    token = request.headers['Authorization'].split(' ')[1]
-    profile = get_profile_by_token(token)
+    token = request_token()
+    profile = profile_utils.get_profile_by_token(token)
 
     return jsonify(
         id=profile['userId'],
@@ -24,35 +26,39 @@ def get_profile():
 
 
 @profile_bp.route('/edit', methods=['PUT'])
-@auth.login_required
+@auth_token.login_required
 def edit_profile():
     username = request.form['username']
     email = request.form['email']
     about = request.form['about']
 
     db = get_db()
-    error = check_edit_properties(username, email, about)
+    error = profile_utils.check_edit_properties(username, email, about)
 
     if error is None:
-        token = request.headers['Authorization'].split(' ')[1]
-        profile = get_profile_by_token(token)
+        token = request_token()
+        profile = profile_utils.get_profile_by_token(token)
 
         try:
-            update_user(username, email, about, profile)
+            profile_utils.update_user(username, email, about, profile)
             return f"User information changed successfully"
 
         except db.IntegrityError:
             error = f'Email "{email}" is already taken.'
 
     flash(error)
-    return f"{error}"
+    return json.dumps({
+        'error': error
+    })
 
 
 @profile_bp.route('/delete', methods=['DELETE'])
-@auth.login_required
+@auth_token.login_required
 def delete_profile():
-    token = request.headers['Authorization'].split(' ')[1]
-    profile = get_profile_by_token(token)
+    token = request_token()
+    profile = profile_utils.get_profile_by_token(token)
 
-    delete_user(profile)
-    return f"User {profile['username']} success deleted."
+    profile_utils.delete_user(profile)
+    return json.dumps({
+        'text': f"User {profile['username']} success deleted."
+    })

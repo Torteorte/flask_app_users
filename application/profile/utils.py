@@ -5,8 +5,8 @@ def get_profile_by_token(token):
     db = get_db()
 
     return db.execute(
-            'SELECT * FROM users JOIN tokens WHERE tokens.userId = users.id and tokens.token = ?', [token]
-        ).fetchone()
+        'SELECT * FROM users JOIN tokens WHERE tokens.userId = users.id and tokens.token = ?', [token]
+    ).fetchone()
 
 
 def check_edit_properties(username, email, about):
