@@ -1,7 +1,7 @@
 from flask import Blueprint
 
 from application.auth import utils as auth_utils
-from application.application_config.auth import project_auth
+from application.application_config.project_auth import project_auth
 from application.shared.utils import set_token_expired, get_or_create_token, get_token_from_request, generate_user_id, \
     json_message, json_token, json_message_with_token, get_request_form_property
 

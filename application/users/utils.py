@@ -17,6 +17,7 @@ def get_users():
 
 
 def get_tokens():
-    return get_db().execute(
+    tokens_for_dev = get_db().execute(
         'SELECT * FROM tokens'
     )
+    return tokens_for_dev

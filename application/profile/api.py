@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify
 
 from application.profile import utils as profile_utils
-from application.application_config.auth import project_auth
+from application.application_config.project_auth import project_auth
 from application.shared.utils import get_token_from_request, json_message, get_request_form_property
 
 profile_bp = Blueprint('profile', __name__, url_prefix='/api/profile')

@@ -6,14 +6,17 @@ from application.application_config.blueprints import app_register_blueprints
 from application.application_config.error_handlers import app_register_error_handler
 
 
-def create_app():
-    app = Flask(__name__)
+def create_app(test_config=None):
+    app = Flask(__name__, )
 
-    app.config.from_mapping(
-        DATABASE=config.DATABASE,
-        FLASK_ENV=config.FLASK_ENV,
-        SECRET_KEY=config.SECRET_KEY
-    )
+    if test_config is None:
+        app.config.from_mapping(
+            DATABASE=config.DATABASE,
+            FLASK_ENV=config.FLASK_ENV,
+            SECRET_KEY=config.SECRET_KEY
+        )
+    else:
+        app.config.from_mapping(test_config)
 
     app_register_blueprints(app)
     app_register_error_handler(app)
