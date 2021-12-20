@@ -1,9 +1,9 @@
-from flask import request, jsonify
 import json
+from flask import request, jsonify
 
-from application.profile.api import profile_bp
+from .exceptions import InvalidAPIUsage
 from application.auth.api import auth_bp
-from .errors_raiser import InvalidAPIUsage
+from application.profile.api import profile_bp
 
 
 @auth_bp.errorhandler(InvalidAPIUsage)

@@ -1,7 +1,7 @@
-from application.db.command import init_db_command
 from application.db.helpers import close_db
+from application.db.command import init_db_command
 
 
-def create_db(app):
+def app_register_command_init_db(app):
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)

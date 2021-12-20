@@ -1,7 +1,5 @@
-from flask import request
-
 from application.db.helpers import get_db
-from application.application_config.errors_raiser import InvalidAPIUsage
+from application.application_config.exceptions import InvalidAPIUsage
 
 
 def get_profile_by_token(token):
@@ -12,17 +10,13 @@ def get_profile_by_token(token):
     ).fetchone()
 
 
-def check_edit_properties(username, email, about):
+def validate_edit_properties(username, email, about):
     fields = {'Username': username, 'Email': email, 'About': about}
 
     for field in fields.keys():
 
         if not fields[field]:
             raise InvalidAPIUsage(f"'{field}' can`t be empty.")
-
-
-def get_profile_property():
-    return request.form.get('username'), request.form.get('email'), request.form.get('about')
 
 
 def update_user(username, email, about, profile):

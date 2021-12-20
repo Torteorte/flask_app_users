@@ -1,17 +1,16 @@
 from flask import Blueprint, jsonify
-import json
 
 from application.profile import utils as profile_utils
-from application.shared.utils import request_token
-from application.application_config.verify_token import auth_token
+from application.application_config.auth import project_auth
+from application.shared.utils import get_token_from_request, json_message, get_request_form_property
 
 profile_bp = Blueprint('profile', __name__, url_prefix='/api/profile')
 
 
 @profile_bp.route('/', methods=['GET'])
-@auth_token.login_required
+@project_auth.login_required
 def get_profile():
-    token = request_token()
+    token = get_token_from_request()
     profile = profile_utils.get_profile_by_token(token)
 
     return jsonify(
@@ -24,30 +23,26 @@ def get_profile():
 
 
 @profile_bp.route('/edit', methods=['PUT'])
-@auth_token.login_required
+@project_auth.login_required
 def edit_profile():
-    username, email, about = profile_utils.get_profile_property()
+    [username, email, about] = get_request_form_property('username', 'email', 'about')
 
-    profile_utils.check_edit_properties(username, email, about)
+    profile_utils.validate_edit_properties(username, email, about)
 
-    token = request_token()
+    token = get_token_from_request()
     profile = profile_utils.get_profile_by_token(token)
 
     profile_utils.update_user(username, email, about, profile)
 
-    return json.dumps({
-        'text': "User information changed successfully"
-    })
+    return json_message("User information changed successfully")
 
 
 @profile_bp.route('/delete', methods=['DELETE'])
-@auth_token.login_required
+@project_auth.login_required
 def delete_profile():
-    token = request_token()
+    token = get_token_from_request()
     profile = profile_utils.get_profile_by_token(token)
 
     profile_utils.delete_user(profile)
 
-    return json.dumps({
-        'text': f"User {profile['username']} success deleted."
-    })
+    return json_message(f"User {profile['username']} success deleted.")
